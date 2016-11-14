@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
+import { ExchangeService } from './exchange.service';
 
 @Component({
   selector: 'currency-converter',
   template: `
-    <input type="number" [value]="baseAmount" (keyup)="change($event)" >
-    USD =
-    <strong>{{targetAmount}}</strong>
+    <input type="number" [(ngModel)]="baseAmount">
+    <currency-select [(selected)]="baseCurrency"></currency-select>
+    <strong>{{targetAmount | fixed: 3}}</strong>
+    <currency-select [(selected)]="targetCurrency"></currency-select>
   `,
   styles: [`
     input[type=number]{
@@ -16,17 +18,18 @@ import { Component } from '@angular/core';
     input::-webkit-outer-spin-button,
     input::-webkit-inner-spin-button {
         -webkit-appearance: none;
-        margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+        margin: 0;
     }
   `]
 })
 export class CurrencyConverter {
-  currencyExchange:number = 0.7;
   baseAmount:number = 1;
-  targetAmount:number = this.baseAmount * this.currencyExchange;
+  baseCurrency:string = 'EUR';
+  targetCurrency:string = 'USD';
 
-  change(event){
-    this.baseAmount = +event.target.value;
-    this.targetAmount = this.baseAmount * this.currencyExchange;
+  constructor(private exchangeService:ExchangeService){}
+
+  get targetAmount(){
+    return this.baseAmount * this.exchangeService.getExchangeRate(this.baseCurrency, this.targetCurrency);
   }
 }
